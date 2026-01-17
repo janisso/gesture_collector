@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: caddy:latest
+    ports:
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./cert.pem:/etc/caddy/certs/cert.pem:ro
+      - ./key.pem:/etc/caddy/certs/key.pem:ro
+      - ../web:/srv/public:ro
+    depends_on:
+      - php
+    networks:
+      - appnet
+
+  php:
+    image: php:8.3-fpm
+    volumes:
+      - ../web:/srv/public
+    networks:
+      - appnet
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: gesture_study
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - appnet
+
+volumes:
+  db_data:
+
+networks:
+  appnet:

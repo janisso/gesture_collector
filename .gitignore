@@ -1,0 +1,8 @@
+web/api/config.php
+docker/*.pem
+docker/cert.pem
+docker/key.pem
+docker/*-key.pem
+docker/*-cert.pem
+*.log
+.DS_Store

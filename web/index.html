@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gesture Collector</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Gesture Collector</h1>
+      <p class="muted">Placeholder UI. Stage 1: wiring + basic API smoke test.</p>
+
+      <section class="card">
+        <h2>API Smoke Test</h2>
+        <div class="row">
+          <button id="startSessionBtn" type="button">Start session</button>
+          <span id="status" class="muted"></span>
+        </div>
+        <pre id="output" aria-live="polite"></pre>
+      </section>
+
+      <footer class="muted">
+        <div>Try: <code>/api/start_session.php</code></div>
+      </footer>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
+
