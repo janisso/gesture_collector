@@ -172,6 +172,8 @@ Implement with PDO + prepared statements.
 
 ## Stage 4 — Frontend without sensors (API wiring first)
 
+**Status:** Complete.
+
 ### 4.1 Minimal UI
 
 * Consent checkbox

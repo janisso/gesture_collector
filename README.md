@@ -63,3 +63,56 @@ docker compose -f docker/docker-compose.yml exec -T mysql \
 ```
 
 At this point `sessions` and `trials` should both exist with counts > 0.
+
+## Stage 3: backend API smoke tests
+
+Requires `jq` on your host and the stack running (`docker compose up -d`).
+
+Start a session and capture the ID:
+
+```
+SESSION_ID=$(curl -sS -X POST -H "Content-Type: application/json" \
+  -d '{"study_id":"s1","study_version":"v1","schema_version":1,"consent_version":"v1"}' \
+  https://js-MS-7918.local/api/start_session.php | jq -r '.session_id // empty')
+echo "SESSION_ID=$SESSION_ID"
+```
+
+Submit a dummy trial (replace host if different):
+
+```
+curl -sS -X POST -H "Content-Type: application/json" \
+  -d '{"session_id":"'"$SESSION_ID"'","trial_id":"t1","trial_index":0,"stimulus_id":"s1",
+       "t_start_perf_ms":0,"t_end_perf_ms":1000,
+       "diagnostics":{"sample_count":3,"duration_ms":1000,"effective_hz":3},
+       "samples":[{"t_ms":0},{"t_ms":500},{"t_ms":1000}]}' \
+  https://js-MS-7918.local/api/submit_trial.php
+```
+
+Mark the session complete:
+
+```
+curl -sS -X POST -H "Content-Type: application/json" \
+  -d '{"session_id":"'"$SESSION_ID"'"}' \
+  https://js-MS-7918.local/api/end_session.php
+```
+
+Verify rows landed:
+
+```
+docker compose -f docker/docker-compose.yml exec -T mysql \
+  mysql -uroot -prootpass -e "USE gesture_study; SELECT COUNT(*) AS sessions FROM sessions; SELECT COUNT(*) AS trials FROM trials;"
+```
+
+## Stage 4: frontend dummy trial (no sensors)
+
+1) Open `https://js-MS-7918.local/` in a desktop browser.
+2) Check the consent box, click **Start session** (creates a session via API).
+3) Click **Run dummy trial** (generates fake samples/diagnostics locally).
+4) Click **Submit trial** to POST to `/api/submit_trial.php`.
+5) Verify counts in MySQL (same query as above) or via Adminer at `http://localhost:8080/` (server: `mysql`, user: `root`, password: `rootpass`, DB: `gesture_study`).
+
+Expected signals:
+
+- After step 2, the Session badge turns active and the Log shows JSON with `session_id`.
+- After step 4, the Log shows `{ "ok": true, "trial_id": "...", ... }`.
+- DB counts should increase by +1 for sessions/trials; if not, check the browser console/network tab for errors.
