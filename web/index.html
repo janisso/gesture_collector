@@ -51,6 +51,39 @@
       </section>
 
       <section class="card stack">
+        <div class="row space-between">
+          <div>
+            <h2>Sensors</h2>
+            <p class="muted">Enable motion sensors (iOS needs a user gesture). Shows live Hz estimate.</p>
+          </div>
+          <span id="sensorBadge" class="badge muted">Sensors off</span>
+        </div>
+        <div class="row gap wrap">
+          <button id="enableSensorsBtn" type="button">Enable motion sensors</button>
+          <span id="sensorStatus" class="muted">Waiting…</span>
+        </div>
+        <div class="row gap">
+          <div>Hz estimate: <strong id="hzEstimate">0</strong></div>
+          <div>Samples: <strong id="liveSamples">0</strong></div>
+        </div>
+      </section>
+
+      <section class="card stack">
+        <div class="row space-between">
+          <div>
+            <h2>Live Trial Recording</h2>
+            <p class="muted">Record with real sensors and upload via /api/submit_trial.php.</p>
+          </div>
+          <span id="recordBadge" class="badge muted">Idle</span>
+        </div>
+        <div class="row gap wrap">
+          <button id="startRecordBtn" type="button">Start recording</button>
+          <button id="stopRecordBtn" type="button">Stop &amp; submit</button>
+        </div>
+        <pre id="recordSummary" aria-live="polite">Not recording.</pre>
+      </section>
+
+      <section class="card stack">
         <h2>Log</h2>
         <pre id="output" aria-live="polite"></pre>
       </section>

@@ -192,6 +192,8 @@ Implement with PDO + prepared statements.
 
 ## Stage 5 — Real sensor capture (Android first if possible)
 
+**Status:** Complete.
+
 ### 5.1 Permission gating screen
 
 * Button: “Enable motion sensors”
