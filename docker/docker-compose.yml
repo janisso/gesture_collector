@@ -32,6 +32,16 @@ services:
     networks:
       - appnet
 
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    networks:
+      - appnet
+
 volumes:
   db_data:
 
