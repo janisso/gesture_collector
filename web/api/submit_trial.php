@@ -3,19 +3,27 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/db.php';
 
+api_require_post();
 $body = api_read_json_body();
 
-$sessionId = is_string($body['session_id'] ?? null) ? $body['session_id'] : null;
-if ($sessionId === null) {
+$sessionId = is_string($body['session_id'] ?? null) ? trim($body['session_id']) : '';
+if ($sessionId === '') {
     api_error(400, 'session_id is required');
 }
 
-$trialId = is_string($body['trial_id'] ?? null) ? $body['trial_id'] : api_uuid_v4();
-$studyId = is_string($body['study_id'] ?? null) ? $body['study_id'] : 'unknown';
-$studyVersion = is_string($body['study_version'] ?? null) ? $body['study_version'] : 'unknown';
+$trialId = is_string($body['trial_id'] ?? null) ? trim($body['trial_id']) : '';
+if ($trialId === '') {
+    $trialId = api_uuid_v4();
+}
+
+$studyId = is_string($body['study_id'] ?? null) ? trim($body['study_id']) : 'unknown';
+$studyVersion = is_string($body['study_version'] ?? null) ? trim($body['study_version']) : 'unknown';
 $schemaVersion = is_numeric($body['schema_version'] ?? null) ? (int) $body['schema_version'] : 1;
 $trialIndex = is_numeric($body['trial_index'] ?? null) ? (int) $body['trial_index'] : 0;
-$stimulusId = is_string($body['stimulus_id'] ?? null) ? $body['stimulus_id'] : null;
+$stimulusId = is_string($body['stimulus_id'] ?? null) ? trim($body['stimulus_id']) : null;
+if ($stimulusId === '') {
+    $stimulusId = null;
+}
 
 $tStart = is_numeric($body['t_start_perf_ms'] ?? null) ? (float) $body['t_start_perf_ms'] : 0.0;
 $tEnd = is_numeric($body['t_end_perf_ms'] ?? null) ? (float) $body['t_end_perf_ms'] : 0.0;
@@ -72,7 +80,7 @@ $insert = $pdo->prepare(
         :survey_json, :diagnostics_json, :samples_json,
         :sample_count, :duration_ms, :effective_hz
     )
-    ON DUPLICATE KEY UPDATE id = VALUES(id)'
+    ON DUPLICATE KEY UPDATE session_id = session_id'
 );
 
 $insert->execute([

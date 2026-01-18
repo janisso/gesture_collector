@@ -22,7 +22,10 @@ function api_read_json_body(): array
         return [];
     }
     $decoded = json_decode($raw, true);
-    return is_array($decoded) ? $decoded : [];
+    if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+        api_error(400, 'Invalid JSON body');
+    }
+    return $decoded;
 }
 
 function api_uuid_v4(): string
@@ -45,6 +48,14 @@ function api_json_string($value): string
 {
     $encoded = json_encode($value, JSON_UNESCAPED_SLASHES);
     return $encoded === false ? 'null' : $encoded;
+}
+
+function api_require_post(): void
+{
+    if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
+        header('Allow: POST');
+        api_error(405, 'POST required');
+    }
 }
 
 function api_pdo(): PDO

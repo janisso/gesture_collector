@@ -132,6 +132,8 @@ Key requirements:
 
 ## Stage 3 — Backend API “happy path” (PHP)
 
+**Status:** Complete.
+
 Implement with PDO + prepared statements.
 
 ### 3.1 `api/db.php`
