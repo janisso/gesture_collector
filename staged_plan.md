@@ -255,6 +255,8 @@ Add checks:
 
 ## Stage 8 — Admin export
 
+**Status:** Complete.
+
 Implement `admin/export.php` (protected by basic auth or token).
 
 Export strategy:

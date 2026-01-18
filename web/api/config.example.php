@@ -8,5 +8,8 @@ return [
         'password' => 'rootpass',
         'options' => [],
     ],
+    'admin' => [
+        // Set a strong token; required by admin/export.php via X-Admin-Token header.
+        'token' => 'change-me',
+    ],
 ];
-

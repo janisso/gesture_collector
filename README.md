@@ -116,3 +116,38 @@ Expected signals:
 - After step 2, the Session badge turns active and the Log shows JSON with `session_id`.
 - After step 4, the Log shows `{ "ok": true, "trial_id": "...", ... }`.
 - DB counts should increase by +1 for sessions/trials; if not, check the browser console/network tab for errors.
+
+## Stage 5: real sensor capture (mobile)
+
+1) Use a mobile browser over HTTPS at your host (example `https://js-MS-7918.local/`).
+2) Start a session (consent checkbox + **Start session**).
+3) Tap **Enable motion sensors** (required on iOS Safari) and confirm the prompt.
+4) Watch Hz estimate tick up as you move the phone (devicemotion events).
+5) Tap **Start recording**, move for 5–10s, then **Stop & submit** to POST to `/api/submit_trial.php`.
+6) Confirm Log shows `{ "ok": true, "trial_id": ... }` and DB counts increase (mysql query or Adminer).
+
+## Stage 6: iOS hardening + retries
+
+1) On iOS Safari, tap **Enable motion sensors** (must be a user gesture). If denied, Safari will not re-prompt until you allow motion/tilt access in Settings → Safari → Motion & Orientation; the UI shows a warning if unsupported/denied.
+2) Ensure the Hz estimate ticks up when moving the phone; if it stays at 0, reload and try enabling again.
+3) Start a session, then **Start recording** → move device → **Stop & submit**. If “No samples captured” appears, re-enable sensors and retry.
+4) Verify the submission returned `{ok:true}` and rows increased in MySQL/Adminer.
+
+## Stage 8: Admin export
+
+Endpoint: `GET /admin/export.php?study_id=...&study_version=...` (version optional). Protected via `X-Admin-Token`.
+
+Prereq: set `admin.token` in `web/api/config.php` (copy from `config.example.php` and change).
+
+Run (from host):
+
+```
+curl -sS -D - \
+  -H "X-Admin-Token: YOUR_TOKEN" \
+  "https://js-MS-7918.local/admin/export.php?study_id=s1" \
+  -o trials.zip
+```
+
+Notes:
+- Returns a ZIP with `trial_<trial_id>.json` files containing stored trial payloads and metadata.
+- Requires PHP zip extension; rebuild PHP image if needed: `cd docker && docker compose build php && docker compose up -d`.
