@@ -225,6 +225,8 @@ Implement with PDO + prepared statements.
 
 ## Stage 6 — iOS hardening
 
+**Status:** Complete.
+
 Checklist:
 
 * permission request must be triggered by a user gesture

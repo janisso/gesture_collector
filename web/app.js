@@ -9,6 +9,7 @@ const submitTrialBtn = document.getElementById("submitTrialBtn");
 const trialSummary = document.getElementById("trialSummary");
 const sensorBadge = document.getElementById("sensorBadge");
 const sensorStatus = document.getElementById("sensorStatus");
+const sensorWarnings = document.getElementById("sensorWarnings");
 const enableSensorsBtn = document.getElementById("enableSensorsBtn");
 const hzEstimate = document.getElementById("hzEstimate");
 const liveSamples = document.getElementById("liveSamples");
@@ -27,6 +28,7 @@ let isRecording = false;
 let recordStart = 0;
 let samples = [];
 let latestOrientation = null;
+let sensorsSupported = true;
 
 function setStatus(text) {
   statusEl.textContent = text;
@@ -58,6 +60,11 @@ function updateTrialBadge() {
 }
 
 function updateSensorBadge() {
+  if (!sensorsSupported) {
+    sensorBadge.textContent = "Unsupported";
+    sensorBadge.classList.add("muted");
+    return;
+  }
   if (sensorsEnabled) {
     sensorBadge.textContent = "Sensors on";
     sensorBadge.classList.remove("muted");
@@ -81,8 +88,8 @@ function updateButtons() {
   startBtn.disabled = !consentCheckbox.checked;
   runDummyBtn.disabled = !sessionId;
   submitTrialBtn.disabled = !sessionId || !currentTrial;
-  enableSensorsBtn.disabled = sensorsEnabled;
-  startRecordBtn.disabled = !sessionId || !sensorsEnabled || isRecording;
+  enableSensorsBtn.disabled = sensorsEnabled || !sensorsSupported;
+  startRecordBtn.disabled = !sessionId || !sensorsEnabled || isRecording || !sensorsSupported;
   stopRecordBtn.disabled = !isRecording;
 }
 
@@ -198,6 +205,8 @@ function handleOrientation(event) {
 }
 
 function handleMotion(event) {
+  if (!sensorsSupported) return;
+
   const now = performance.now();
   if (!liveStartTime) {
     liveStartTime = now;
@@ -216,14 +225,7 @@ function handleMotion(event) {
     t_ms: now,
     acc: toVector(event.acceleration, ["x", "y", "z"]),
     acc_g: toVector(event.accelerationIncludingGravity, ["x", "y", "z"]),
-    rot: toVector(
-      event.rotationRate && {
-        a: event.rotationRate.alpha,
-        b: event.rotationRate.beta,
-        g: event.rotationRate.gamma,
-      },
-      ["a", "b", "g"]
-    ),
+    rot: toVector(event.rotationRate, ["alpha", "beta", "gamma"]),
     ori: latestOrientation
       ? {
           alpha: latestOrientation.alpha,
@@ -248,16 +250,23 @@ function attachSensorListeners() {
 }
 
 async function enableSensors() {
-  setStatus("Requesting motion permission…");
-  sensorStatus.textContent = "Requesting permission…";
+  sensorWarnings.textContent = "";
 
   if (typeof DeviceMotionEvent === "undefined") {
+    sensorsSupported = false;
+    sensorWarnings.textContent = "Motion sensors not supported in this browser/device.";
+    updateSensorBadge();
+    updateButtons();
     throw new Error("DeviceMotionEvent not supported in this browser");
   }
+
+  setStatus("Requesting motion permission…");
+  sensorStatus.textContent = "Requesting permission…";
 
   if (typeof DeviceMotionEvent.requestPermission === "function") {
     const perm = await DeviceMotionEvent.requestPermission();
     if (perm !== "granted") {
+      sensorWarnings.textContent = "Permission denied. Tap the button after allowing motion access.";
       throw new Error("Motion permission denied");
     }
   }
@@ -289,6 +298,9 @@ async function startRecording() {
   }
   if (!sensorsEnabled) {
     throw new Error("Enable motion sensors first");
+  }
+   if (!sensorsSupported) {
+    throw new Error("Sensors unsupported on this device");
   }
   isRecording = true;
   samples = [];
@@ -326,6 +338,15 @@ async function stopRecordingAndSubmit() {
   isRecording = false;
   const tEnd = performance.now();
   const diagnostics = computeDiagnostics(tEnd);
+
+  if (diagnostics.sample_count === 0) {
+    recordSummary.textContent =
+      "No samples captured; check permissions or try again with more motion.";
+    setStatus("No samples");
+    updateRecordBadge();
+    updateButtons();
+    return;
+  }
 
   const trial = {
     trial_id: uuid(),

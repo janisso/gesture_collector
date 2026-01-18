@@ -108,6 +108,12 @@ pre {
   font-size: 12px;
 }
 
+.warning {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
 label {
   display: flex;
   align-items: center;
