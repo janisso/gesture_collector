@@ -2,13 +2,21 @@
 
 Stage 1 boilerplate is under `web/` (served by Caddy/PHP-FPM via `docker/docker-compose.yml`).
 
-Quick start (local HTTPS):
+Quick start (local HTTPS for host `js-MS-7918.local`):
 
-1. Ensure `docker/cert.pem` + `docker/key.pem` match your hostname in `docker/Caddyfile`.
-2. Run: `cd docker && docker compose up`
-3. Open: `https://<your-hostname>/`
+1. Ensure `docker/cert.pem` + `docker/key.pem` match your hostname in `docker/Caddyfile` (here: `js-MS-7918.local`).
+2. Build PHP with pdo_mysql (first time or after Dockerfile changes):
 
-API smoke test: `POST https://<your-hostname>/api/start_session.php`
+   ```
+   cd docker
+   docker compose build php
+   docker compose up -d
+   ```
+
+   For subsequent runs, `docker compose up -d` is enough.
+3. Open: `https://js-MS-7918.local/`
+
+API smoke test: `POST https://js-MS-7918.local/api/start_session.php`
 
 ## Stage 2: database setup + dry run
 

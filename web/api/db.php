@@ -10,6 +10,11 @@ function api_json_response(int $statusCode, array $payload): void
     exit;
 }
 
+function api_error(int $statusCode, string $message): void
+{
+    api_json_response($statusCode, ['ok' => false, 'error' => $message]);
+}
+
 function api_read_json_body(): array
 {
     $raw = file_get_contents('php://input');
@@ -36,14 +41,17 @@ function api_uuid_v4(): string
     );
 }
 
+function api_json_string($value): string
+{
+    $encoded = json_encode($value, JSON_UNESCAPED_SLASHES);
+    return $encoded === false ? 'null' : $encoded;
+}
+
 function api_pdo(): PDO
 {
     $configPath = __DIR__ . '/config.php';
     if (!file_exists($configPath)) {
-        api_json_response(500, [
-            'ok' => false,
-            'error' => 'Missing config.php (copy config.example.php to config.php).',
-        ]);
+        api_error(500, 'Missing config.php (copy config.example.php to config.php).');
     }
 
     $config = require $configPath;
@@ -58,7 +66,6 @@ function api_pdo(): PDO
         $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         return $pdo;
     } catch (Throwable $e) {
-        api_json_response(500, ['ok' => false, 'error' => 'DB connection failed.']);
+        api_error(500, 'DB connection failed.');
     }
 }
-

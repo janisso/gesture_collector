@@ -1,0 +1,7 @@
+js-MS-7918.local {
+  tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
+  root * /srv/public
+  encode gzip
+  php_fastcgi php:9000
+  file_server
+}
